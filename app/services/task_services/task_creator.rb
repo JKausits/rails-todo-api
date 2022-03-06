@@ -1,9 +1,10 @@
 module TaskServices
   class TaskCreator < ApplicationService
-    attr_reader :title, :description
-    def initialize(title:, description:)
+    attr_reader :title, :description, :user_id
+    def initialize(title:, description:, user_id:)
       @title = title
       @description = description
+      @user_id = user_id
     end
 
     def call
@@ -15,7 +16,8 @@ module TaskServices
     def create_task
       Task.create(
         title: title,
-        description: description
+        description: description,
+        user_id: user_id
       )
     end
   end

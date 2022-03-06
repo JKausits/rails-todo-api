@@ -2,9 +2,9 @@ class ApplicationController < ActionController::API
 
   private
   def authenticate
-    auth_header = request.headers['Authorization'].split(' ')[1]
-
-    @user ||= AuthenticationServices::AuthenticatedUserReader.call(token: auth_header)
+    auth_header = request.headers['Authorization']
+    token = auth_header.split(' ')[1] if auth_header.present?
+    @user ||= AuthenticationServices::AuthenticatedUserReader.call(token: token)
     if @user
       return true
     else
