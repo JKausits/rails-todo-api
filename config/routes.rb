@@ -5,6 +5,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :tasks, only: [:create, :index, :show, :update]
       post 'tasks/:id/complete', to: 'tasks#complete'
+      post 'register', to: 'authentication#register'
     end
   end
 end

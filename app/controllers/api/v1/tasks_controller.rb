@@ -1,4 +1,5 @@
 class Api::V1::TasksController < ApplicationController
+  before_action :authenticate
 
   def create
     @task = TaskServices::TaskCreator.call(
