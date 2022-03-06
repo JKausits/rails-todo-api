@@ -1,9 +1,10 @@
 class Api::V1::TasksController < ApplicationController
   before_action :authenticate
+  before_action :find_task, only: [:show, :complete, :update]
   before_action :validate_owner, only: [:show, :complete, :update]
 
   def create
-    @task = TaskServices::TaskCreator.call(
+    @task = Task.create(
       title: params[:title],
       description: params[:description],
       user_id: @user.id
@@ -13,31 +14,34 @@ class Api::V1::TasksController < ApplicationController
   end
 
   def index
-    @tasks = TaskServices::TasksReader.call(completed: params['completed'], user_id: @user.id)
+    @tasks = @user.tasks
+    @tasks = params[:completed] == 'true' ? @tasks.completed : @tasks.not_completed if params[:completed].present?
+
     render json: @tasks, each_serializer: TaskSummarySerializer
   end
 
   def show
-    @task = TaskServices::TaskReader.call(id: params[:id])
     render json: @task, serializer: TaskDetailSerializer
   end
 
   def complete
-    @task = TaskServices::TaskCompleter.call(id: params[:id])
+    @task.complete!
     render json: @task, serializer: TaskDetailSerializer
   end
 
   def update
-    @task = TaskServices::TaskUpdater.call(
-      id: params['id'],
-      title: params['title'],
-      description: params['description'])
+    @task.update(
+      title: params[:title],
+      description: params[:description])
     render json: @task, serializer: TaskDetailSerializer
   end
 
   private
   def validate_owner
-    task_user_id = Task.get_user_id(params['id'])
-    render json: { message: 'Invalid Permissions'}, status: :unauthorized if task_user_id != @user.id
+    render json: { message: 'Invalid Permissions'}, status: :unauthorized if @task.user_id != @user.id
+  end
+
+  def find_task
+    @task ||= Task.find(params['id'])
   end
 end
